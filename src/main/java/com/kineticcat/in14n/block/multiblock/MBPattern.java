@@ -1,6 +1,6 @@
 package com.kineticcat.in14n.block.multiblock;
 
-public class Pattern {
+public class MBPattern {
 
     //data uses YXZ
     //offset uses XYZ

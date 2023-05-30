@@ -9,32 +9,38 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Objects;
 
-public class Controller extends Block {
+public class MBController extends BaseEntityBlock {
 
     private String MultiblockName;
-    private Pattern pattern;
+    private MBPattern pattern;
     private final Logger LOGGER = LogUtils.getLogger();
     public int sizeX;
     public int sizeY;
     public int sizeZ;
 
-    public Controller(Properties properties, String Name) {
+    public MBController(Properties properties, String Name) {
         super(properties);
         MultiblockName = Name;
         try {
             FileReader reader = new FileReader(String.format("E:\\Projects\\Industrialisation\\src\\main\\resources\\data\\industrialisation\\multiblocks\\%s.json", MultiblockName));
             Gson gson = new Gson();
-            pattern = gson.fromJson(reader, Pattern.class);
+            pattern = gson.fromJson(reader, MBPattern.class);
 
             sizeX = pattern.data[0].length;
             sizeY = pattern.data.length;
@@ -44,6 +50,10 @@ public class Controller extends Block {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -70,21 +80,22 @@ public class Controller extends Block {
         pattern.data = newData;
     }
 
-    private String[][][] rotate3dArray(String[][][] arr) {
-        String[][][] out = arr.clone();
-
-        for (int x=0; x<arr.length; x++) {
-            for (int y=0; y<arr[0].length; y++) {
-                for (int z=0; z<arr[0][0].length; z++) {
-                    out[y][x][z] = arr[x][y][z];
-                }
-            }
-        }
-        arr = out;
-
-
-        return out;
-    }
+    //i cannot be fucked to deal with this rn
+//    private String[][][] rotate3dArray(String[][][] arr) {
+//        String[][][] out = arr.clone();
+//
+//        for (int x=0; x<arr.length; x++) {
+//            for (int y=0; y<arr[0].length; y++) {
+//                for (int z=0; z<arr[0][0].length; z++) {
+//                    out[y][x][z] = arr[x][y][z];
+//                }
+//            }
+//        }
+//        arr = out;
+//
+//
+//        return out;
+//    }
 
     public Boolean testMultiblockArea(Level level, BlockPos pos) {
         BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
@@ -97,7 +108,7 @@ public class Controller extends Block {
                     ResourceLocation location = ForgeRegistries.BLOCKS.getKey(state.getBlock());
                     assert location != null;
                     String blockName = location.getNamespace()+":"+location.getPath();
-                    LOGGER.info(testPos.toString()+"|"+blockName+"|"+pattern.data[x][y][z]+"|");
+                    LOGGER.info(testPos +"|"+blockName+"|"+pattern.data[x][y][z]+"|");
                     if (!(Objects.equals(pattern.data[x][y][z], "")) && !(Objects.equals(pattern.data[x][y][z], blockName))) {
                         LOGGER.info("nope");
                         return false;
@@ -109,4 +120,15 @@ public class Controller extends Block {
         return true;
     }
 
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return null;
+    }
 }

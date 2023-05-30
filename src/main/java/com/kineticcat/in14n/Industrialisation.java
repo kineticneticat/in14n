@@ -1,5 +1,6 @@
 package com.kineticcat.in14n;
 
+import com.kineticcat.in14n.block.entity.ModBlockEntities;
 import com.mojang.logging.LogUtils;
 import com.kineticcat.in14n.block.ModBlocks;
 import com.kineticcat.in14n.item.ModCreativeModeTabs;
@@ -27,6 +28,7 @@ public class Industrialisation {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         MinecraftForge.EVENT_BUS.register(this);
@@ -40,7 +42,7 @@ public class Industrialisation {
 
     private void addCreative(CreativeModeTabEvent.BuildContents event) {
         if(event.getTab() == ModCreativeModeTabs.INDUSTRIALISATION_TAB) {
-            event.accept(ModBlocks.TEST_BLOCK);
+            event.accept(ModBlocks.MB_CRUSHER_CONTROLLER);
         }
     }
 
