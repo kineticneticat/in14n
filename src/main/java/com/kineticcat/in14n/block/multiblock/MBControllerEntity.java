@@ -13,14 +13,13 @@ public class MBControllerEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag nbt) {
-        super.saveAdditional(nbt);
-    }
+    protected void saveAdditional(CompoundTag nbt) { super.saveAdditional(nbt); }
 
     @Override
     public void load(CompoundTag nbt) {
         super.load(nbt);
     }
+
 
     public static <E extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, E pEntity) {}
 }

@@ -4,6 +4,7 @@ import com.kineticcat.in14n.Industrialisation;
 import com.kineticcat.in14n.block.multiblock.MBController;
 import com.kineticcat.in14n.block.multiblock.controllers.MBCrusherController;
 import com.kineticcat.in14n.block.multiblock.controllers.entity.MBCrusherControllerEntity;
+import com.kineticcat.in14n.block.multiblock.parts.MBCrusherPart;
 import com.kineticcat.in14n.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -26,6 +27,10 @@ public class ModBlocks {
 //                    .strength(6f).requiresCorrectToolForDrops(), "test"));
     public static final RegistryObject<Block> MB_CRUSHER_CONTROLLER = registerBlock("crusher_controller",
             () -> new MBCrusherController(BlockBehaviour.Properties.of(Material.METAL)
+                    .strength(6f).requiresCorrectToolForDrops()));
+
+    public static final RegistryObject<Block> MB_CRUSHER_PART = registerBlock("crusher_part",
+            () -> new MBCrusherPart(BlockBehaviour.Properties.of(Material.METAL)
                     .strength(6f).requiresCorrectToolForDrops()));
 
     private static <T extends Block> RegistryObject<T> registerBlock(String name, Supplier<T> block) {

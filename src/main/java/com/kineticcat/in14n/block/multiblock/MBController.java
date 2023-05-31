@@ -1,9 +1,11 @@
 package com.kineticcat.in14n.block.multiblock;
 
 import com.google.gson.Gson;
+import com.kineticcat.in14n.block.multiblock.parts.entity.MBCrusherPartEntity;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -15,6 +17,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -33,6 +36,7 @@ public class MBController extends BaseEntityBlock {
     public int sizeX;
     public int sizeY;
     public int sizeZ;
+    public BlockState getPartState() {return null;}
 
     public MBController(Properties properties, String Name) {
         super(properties);
@@ -59,16 +63,21 @@ public class MBController extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
-        if (level.isClientSide) {
-            testMultiblockArea(level, pos);
+        if (!level.isClientSide) {
+            Boolean found = testMultiblockArea(level, pos);
+            if (found) {
+                swapParts(level, pos);
+            }
         }
 
         return InteractionResult.SUCCESS;
     }
 
     public void fixDataOrder() {
-        String[][][] newData = new String[sizeX][sizeY][sizeZ];
 
+        pattern.offset = new int[]{pattern.offset[1], pattern.offset[0], pattern.offset[2]};
+
+        String[][][] newData = new String[sizeX][sizeY][sizeZ];
         for (int y=0; y<sizeY; y++) {
             for (int x=0; x<sizeX; x++) {
                 for (int z=0; z<sizeZ; z++) {
@@ -76,7 +85,6 @@ public class MBController extends BaseEntityBlock {
                 }
             }
         }
-
         pattern.data = newData;
     }
 
@@ -97,7 +105,7 @@ public class MBController extends BaseEntityBlock {
 //        return out;
 //    }
 
-    public Boolean testMultiblockArea(Level level, BlockPos pos) {
+    private Boolean testMultiblockArea(Level level, BlockPos pos) {
         BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
 
         for (int x=0; x<sizeX; x++) {
@@ -119,6 +127,32 @@ public class MBController extends BaseEntityBlock {
         LOGGER.info("found");
         return true;
     }
+    private void swapParts(Level level, BlockPos pos) {
+        BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
+        for (int x=0; x<sizeX; x++) {
+            for (int y=0; y<sizeY; y++) {
+                for (int z=0; z<sizeZ; z++) {
+                    BlockPos swapPos = zero.offset(x, y, z);
+                    BlockState state = level.getBlockState(swapPos);
+                    ResourceLocation location = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                    assert location != null;
+                    String blockName = location.getNamespace()+":"+location.getPath();
+                    if (!(x == pattern.offset[0] && y == pattern.offset[1] && z == pattern.offset[2])) {
+                        level.setBlockAndUpdate(swapPos, getPartState());
+                        BlockEntity entity = level.getBlockEntity(swapPos);
+                        assert entity != null;
+                        CompoundTag nbt = entity.serializeNBT();
+                        nbt.putString("Replaces", blockName);
+                        entity.deserializeNBT(nbt);
+                        level.blockUpdated(swapPos, getPartState().getBlock());
+                    }
+                }
+            }
+        }
+    }
+
+
+
 
     @Nullable
     @Override

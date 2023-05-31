@@ -1,5 +1,6 @@
 package com.kineticcat.in14n.block.multiblock.controllers;
 
+import com.kineticcat.in14n.block.ModBlocks;
 import com.kineticcat.in14n.block.entity.ModBlockEntities;
 import com.kineticcat.in14n.block.multiblock.MBController;
 import com.kineticcat.in14n.block.multiblock.controllers.entity.MBCrusherControllerEntity;
@@ -15,6 +16,11 @@ public class MBCrusherController extends MBController {
 
     public MBCrusherController(Properties properties) {
         super(properties, "crusher");
+    }
+
+    @Override
+    public BlockState getPartState() {
+        return ModBlocks.MB_CRUSHER_PART.get().defaultBlockState();
     }
 
     @Override
