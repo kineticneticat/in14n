@@ -7,9 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -24,8 +28,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class MBController extends BaseEntityBlock {
@@ -41,19 +45,32 @@ public class MBController extends BaseEntityBlock {
     public MBController(Properties properties, String Name) {
         super(properties);
         MultiblockName = Name;
-        try {
-            FileReader reader = new FileReader(String.format("E:\\Projects\\Industrialisation\\src\\main\\resources\\data\\industrialisation\\multiblocks\\%s.json", MultiblockName));
-            Gson gson = new Gson();
-            pattern = gson.fromJson(reader, MBPattern.class);
+//        try {
+//            FileReader reader = new FileReader(String.format("data/in14n/patterns/%s.json", MultiblockName));
+//            Gson gson = new Gson();
+//            pattern = gson.fromJson(reader, MBPattern.class);
+//
+//            sizeX = pattern.data[0].length;
+//            sizeY = pattern.data.length;
+//            sizeZ = pattern.data[0][0].length;
+//
+//            fixDataOrder();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//
+//        }
 
-            sizeX = pattern.data[0].length;
-            sizeY = pattern.data.length;
-            sizeZ = pattern.data[0][0].length;
-
-            fixDataOrder();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        ResourceLocation test = new ResourceLocation("in14n:data/in14n/patterns/crusher.json");
+        String namespace = test.getNamespace();
+        String path = test.getPath();
+        LOGGER.info(String.format("data/%s/%s", namespace, path));
+//        BufferedReader readIn = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader()
+//                .getResourceAsStream(String.format("data/%s/%s", namespace, path))), StandardCharsets.UTF_8));
+//        try {
+//            LOGGER.info(readIn.readLine());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public RenderShape getRenderShape(BlockState state) {
