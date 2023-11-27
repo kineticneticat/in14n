@@ -1,68 +1,47 @@
 package com.kineticcat.in14n.block.multiblock;
 
 import com.google.gson.Gson;
-import com.kineticcat.in14n.block.multiblock.parts.entity.MBCrusherPartEntity;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.IoSupplier;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class MBController extends BaseEntityBlock {
 
-    private String MultiblockName;
-    private MBPattern pattern;
+    private final MBPattern pattern;
     private final Logger LOGGER = LogUtils.getLogger();
     public int sizeX;
     public int sizeY;
     public int sizeZ;
     public BlockState getPartState() {return null;}
 
-    public MBController(Properties properties, String Name) {
+    public MBController(Properties properties, String name) {
         super(properties);
-        MultiblockName = Name;
-//        try {
-//            FileReader reader = new FileReader(String.format("data/in14n/patterns/%s.json", MultiblockName));
-//            Gson gson = new Gson();
-//            pattern = gson.fromJson(reader, MBPattern.class);
-//
-//            sizeX = pattern.data[0].length;
-//            sizeY = pattern.data.length;
-//            sizeZ = pattern.data[0][0].length;
-//
-//            fixDataOrder();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//
-//        }
         // this is shit and probably slow but idk a better way
-        ResourceLocation test = new ResourceLocation("in14n:data/in14n/patterns/crusher.json");
-        String namespace = test.getNamespace();
+        ResourceLocation test = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", name));
         String path = test.getPath();
         BufferedReader readIn = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader()
                 .getResourceAsStream(path)), StandardCharsets.UTF_8));
@@ -91,11 +70,12 @@ public class MBController extends BaseEntityBlock {
         fixDataOrder();
     }
 
-    public RenderShape getRenderShape(BlockState state) {
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
         return RenderShape.MODEL;
     }
 
     @Override
+    @NotNull
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
         if (!level.isClientSide) {
