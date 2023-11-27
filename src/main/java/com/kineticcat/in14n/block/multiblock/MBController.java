@@ -5,6 +5,7 @@ import com.kineticcat.in14n.block.multiblock.parts.entity.MBCrusherPartEntity;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -59,18 +60,35 @@ public class MBController extends BaseEntityBlock {
 //            e.printStackTrace();
 //
 //        }
-
+        // this is shit and probably slow but idk a better way
         ResourceLocation test = new ResourceLocation("in14n:data/in14n/patterns/crusher.json");
         String namespace = test.getNamespace();
         String path = test.getPath();
-        LOGGER.info(String.format("data/%s/%s", namespace, path));
-//        BufferedReader readIn = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader()
-//                .getResourceAsStream(String.format("data/%s/%s", namespace, path))), StandardCharsets.UTF_8));
-//        try {
-//            LOGGER.info(readIn.readLine());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        BufferedReader readIn = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader()
+                .getResourceAsStream(path)), StandardCharsets.UTF_8));
+        String FullFile = "";
+        String line = "";
+        while (true) {
+            try {
+                line = readIn.readLine();
+            } catch (IOException e) {
+                // cant really fix it
+                e.printStackTrace();
+            }
+            if (line != null) {
+                FullFile = FullFile + line + "\n";
+            } else {
+                break;
+            }
+        }
+        Gson gson = new Gson();
+        pattern = gson.fromJson(FullFile, MBPattern.class);
+
+        sizeX = pattern.data[0].length;
+        sizeY = pattern.data.length;
+        sizeZ = pattern.data[0][0].length;
+
+        fixDataOrder();
     }
 
     public RenderShape getRenderShape(BlockState state) {
@@ -123,6 +141,7 @@ public class MBController extends BaseEntityBlock {
 //    }
 
     private Boolean testMultiblockArea(Level level, BlockPos pos) {
+
         BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
 
         for (int x=0; x<sizeX; x++) {
@@ -133,9 +152,10 @@ public class MBController extends BaseEntityBlock {
                     ResourceLocation location = ForgeRegistries.BLOCKS.getKey(state.getBlock());
                     assert location != null;
                     String blockName = location.getNamespace()+":"+location.getPath();
-                    LOGGER.info(testPos +"|"+blockName+"|"+pattern.data[x][y][z]+"|");
+//                    LOGGER.info(testPos +"|"+blockName+"|"+pattern.data[x][y][z]+"|");
                     if (!(Objects.equals(pattern.data[x][y][z], "")) && !(Objects.equals(pattern.data[x][y][z], blockName))) {
                         LOGGER.info("nope");
+                        level.addParticle(ParticleTypes.SMOKE, testPos.getX(), testPos.getY(), testPos.getZ(), 0.0, 0.0, 0.0);
                         return false;
                     }
                 }
