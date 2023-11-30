@@ -1,10 +1,9 @@
 package com.kineticcat.in14n;
 
-import com.kineticcat.in14n.block.entity.ModBlockEntities;
-import com.mojang.logging.LogUtils;
 import com.kineticcat.in14n.block.ModBlocks;
-import com.kineticcat.in14n.item.ModCreativeModeTabs;
+import com.kineticcat.in14n.block.entity.ModBlockEntities;
 import com.kineticcat.in14n.item.ModItems;
+import com.mojang.logging.LogUtils;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -43,7 +42,8 @@ public class Industrialisation {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-            event.accept(ModBlocks.MB_CRUSHER_CONTROLLER);
+            event.accept(ModBlocks.MB_TEST_CONTROLLER);
+            event.accept(ModBlocks.MB_TEST_PART);
         }
     }
 

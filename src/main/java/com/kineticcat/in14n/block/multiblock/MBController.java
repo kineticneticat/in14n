@@ -1,73 +1,90 @@
 package com.kineticcat.in14n.block.multiblock;
 
 import com.google.gson.Gson;
+import com.kineticcat.in14n.Util;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class MBController extends BaseEntityBlock {
 
-    private final MBPattern pattern;
+    private MBPattern pattern;
     private final Logger LOGGER = LogUtils.getLogger();
+    private final Util UTIL = new Util();
     public int sizeX;
     public int sizeY;
     public int sizeZ;
     public BlockState getPartState() {return null;}
+    public String Name() {return null;} // to be overridden
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public IntegerProperty XPOS;
+    public IntegerProperty YPOS;
+    public IntegerProperty ZPOS;
 
-    public MBController(Properties properties, String name) {
+
+    public MBController(Properties properties) {
         super(properties);
-        // this is shit and probably slow but idk a better way
-        ResourceLocation test = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", name));
-        String path = test.getPath();
-        BufferedReader readIn = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader()
-                .getResourceAsStream(path)), StandardCharsets.UTF_8));
-        String FullFile = "";
-        String line = "";
-        while (true) {
-            try {
-                line = readIn.readLine();
-            } catch (IOException e) {
-                // cant really fix it
-                e.printStackTrace();
-            }
-            if (line != null) {
-                FullFile = FullFile + line + "\n";
-            } else {
-                break;
-            }
-        }
+
+        registerDefaultState(this.getStateDefinition().any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(XPOS, 0)
+                .setValue(YPOS, 0)
+                .setValue(ZPOS, 0)
+        );
+    }
+    public void gatherData() {
+
+        ResourceLocation file = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", Name()));
+        String path = file.getPath();
+
+        String text = UTIL.getFile(path);
+
         Gson gson = new Gson();
-        pattern = gson.fromJson(FullFile, MBPattern.class);
+        pattern = gson.fromJson(text, MBPattern.class);
 
         sizeX = pattern.data[0].length;
         sizeY = pattern.data.length;
         sizeZ = pattern.data[0][0].length;
 
         fixDataOrder();
+
+        XPOS = IntegerProperty.create("x", 0, sizeX-1);
+        YPOS = IntegerProperty.create("y", 0, sizeY-1);
+        ZPOS = IntegerProperty.create("z", 0, sizeZ-1);
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        gatherData();
+        builder.add(FACING);
+        builder.add(XPOS);
+        builder.add(YPOS);
+        builder.add(ZPOS);
     }
 
     public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
@@ -155,13 +172,8 @@ public class MBController extends BaseEntityBlock {
                     assert location != null;
                     String blockName = location.getNamespace()+":"+location.getPath();
                     if (!(x == pattern.offset[0] && y == pattern.offset[1] && z == pattern.offset[2])) {
+                        BlockState defaultState = getPartState();
                         level.setBlockAndUpdate(swapPos, getPartState());
-                        BlockEntity entity = level.getBlockEntity(swapPos);
-                        assert entity != null;
-                        CompoundTag nbt = entity.serializeNBT();
-                        nbt.putString("Replaces", blockName);
-                        entity.deserializeNBT(nbt);
-                        level.blockUpdated(swapPos, getPartState().getBlock());
                     }
                 }
             }
