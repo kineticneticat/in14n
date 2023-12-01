@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "in14n:block/010",
-		"particle": "in14n:block/010"
+		"0": "in14n:block/controller_active",
+		"particle": "in14n:block/controller_active"
 	},
 	"elements": [
 		{

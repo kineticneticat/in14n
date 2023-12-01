@@ -5,7 +5,7 @@
       "y": 90
     },
     "facing=east,x=0,y=0,z=1": {
-      "model": "in14n:block/100",
+      "model": "in14n:block/001",
       "y": 90
     },
     "facing=east,x=0,y=1,z=0": {
@@ -37,7 +37,7 @@
       "model": "in14n:block/000"
     },
     "facing=north,x=0,y=0,z=1": {
-      "model": "in14n:block/100"
+      "model": "in14n:block/001"
     },
     "facing=north,x=0,y=1,z=0": {
       "model": "in14n:block/010"
@@ -63,7 +63,7 @@
       "y": 180
     },
     "facing=south,x=0,y=0,z=1": {
-      "model": "in14n:block/100",
+      "model": "in14n:block/001",
       "y": 180
     },
     "facing=south,x=0,y=1,z=0": {
@@ -96,7 +96,7 @@
       "y": 270
     },
     "facing=west,x=0,y=0,z=1": {
-      "model": "in14n:block/100",
+      "model": "in14n:block/001",
       "y": 270
     },
     "facing=west,x=0,y=1,z=0": {
