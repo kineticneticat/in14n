@@ -16,7 +16,7 @@ public class MBTestPart extends MBPart {
 
 
     public MBTestPart(BlockBehaviour.Properties properties) {
-        super(properties, "crusher");
+        super(properties);
     }
     public String Name() {return "test";}
     @Override

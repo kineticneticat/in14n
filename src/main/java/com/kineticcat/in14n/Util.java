@@ -1,5 +1,7 @@
 package com.kineticcat.in14n;
 
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

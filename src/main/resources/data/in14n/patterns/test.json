@@ -1,10 +1,12 @@
 {
   "data": [
     [
-      ["in14n:test_controller"]
+      ["in14n:mb_test_controller", ""],
+      ["", ""]
     ],
     [
-      ["minecraft:diamond_block"]
+      ["minecraft:diamond_block", ""],
+      ["", ""]
     ]
   ],
   "offset": [0, 0, 0]

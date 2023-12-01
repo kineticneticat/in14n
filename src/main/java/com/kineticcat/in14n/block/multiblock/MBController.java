@@ -2,6 +2,7 @@ package com.kineticcat.in14n.block.multiblock;
 
 import com.google.gson.Gson;
 import com.kineticcat.in14n.Util;
+import com.kineticcat.in14n.block.multiblock.MBPart;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,9 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
@@ -35,13 +34,13 @@ public class MBController extends BaseEntityBlock {
 
     private MBPattern pattern;
     private final Logger LOGGER = LogUtils.getLogger();
-    private final Util UTIL = new Util();
     public int sizeX;
     public int sizeY;
     public int sizeZ;
     public BlockState getPartState() {return null;}
     public String Name() {return null;} // to be overridden
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public  DirectionProperty FACING;
+    public BooleanProperty ACTIVE;
     public IntegerProperty XPOS;
     public IntegerProperty YPOS;
     public IntegerProperty ZPOS;
@@ -52,9 +51,7 @@ public class MBController extends BaseEntityBlock {
 
         registerDefaultState(this.getStateDefinition().any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(XPOS, 0)
-                .setValue(YPOS, 0)
-                .setValue(ZPOS, 0)
+                .setValue(ACTIVE, Boolean.FALSE)
         );
     }
     public void gatherData() {
@@ -62,6 +59,7 @@ public class MBController extends BaseEntityBlock {
         ResourceLocation file = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", Name()));
         String path = file.getPath();
 
+        Util UTIL = new Util();
         String text = UTIL.getFile(path);
 
         Gson gson = new Gson();
@@ -76,15 +74,17 @@ public class MBController extends BaseEntityBlock {
         XPOS = IntegerProperty.create("x", 0, sizeX-1);
         YPOS = IntegerProperty.create("y", 0, sizeY-1);
         ZPOS = IntegerProperty.create("z", 0, sizeZ-1);
+
+        // ?????
+        ACTIVE = BooleanProperty.create("active");
+        FACING = BlockStateProperties.HORIZONTAL_FACING;
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         gatherData();
         builder.add(FACING);
-        builder.add(XPOS);
-        builder.add(YPOS);
-        builder.add(ZPOS);
+        builder.add(ACTIVE);
     }
 
     public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
@@ -167,13 +167,20 @@ public class MBController extends BaseEntityBlock {
             for (int y=0; y<sizeY; y++) {
                 for (int z=0; z<sizeZ; z++) {
                     BlockPos swapPos = zero.offset(x, y, z);
-                    BlockState state = level.getBlockState(swapPos);
-                    ResourceLocation location = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                    BlockState oldState = level.getBlockState(swapPos);
+                    ResourceLocation location = ForgeRegistries.BLOCKS.getKey(oldState.getBlock());
                     assert location != null;
                     String blockName = location.getNamespace()+":"+location.getPath();
                     if (!(x == pattern.offset[0] && y == pattern.offset[1] && z == pattern.offset[2])) {
-                        BlockState defaultState = getPartState();
-                        level.setBlockAndUpdate(swapPos, getPartState());
+                        // ensure controller is not replaced
+                        BlockState newState = getPartState();
+                        newState = newState.setValue(XPOS, x);
+                        newState = newState.setValue(YPOS, y);
+                        newState = newState.setValue(ZPOS, z);
+                        level.setBlockAndUpdate(swapPos, newState);
+                    } else {
+                        BlockState newState = oldState.setValue(ACTIVE, Boolean.TRUE);
+                        level.setBlockAndUpdate(swapPos, newState);
                     }
                 }
             }

@@ -23,11 +23,11 @@ public class ModBlocks {
 //    public static final RegistryObject<Block> TEST_BLOCK = registerBlock("test_block",
 //            () -> new MBController(BlockBehaviour.Properties.of(Material.METAL)
 //                    .strength(6f).requiresCorrectToolForDrops(), "test"));
-    public static final RegistryObject<Block> MB_TEST_CONTROLLER = registerBlock("test_controller",
+    public static final RegistryObject<Block> MB_TEST_CONTROLLER = registerBlock("mb_test_controller",
             () -> new MBTestController(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .strength(6f).requiresCorrectToolForDrops()));
 
-    public static final RegistryObject<Block> MB_TEST_PART = registerBlock("test_part",
+    public static final RegistryObject<Block> MB_TEST_PART = registerBlock("mb_test_part",
             () -> new MBTestPart(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
                     .strength(6f).requiresCorrectToolForDrops()));
 

@@ -22,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class MBPart extends BaseEntityBlock {
 
-    private final Util UTIL = new Util();
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public IntegerProperty XPOS;
     public IntegerProperty YPOS;
@@ -46,6 +45,7 @@ public class MBPart extends BaseEntityBlock {
         ResourceLocation file = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", Name()));
         String path = file.getPath();
 
+        Util UTIL = new Util();
         String text = UTIL.getFile(path);
 
         Gson gson = new Gson();
