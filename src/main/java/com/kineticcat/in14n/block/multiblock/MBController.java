@@ -2,7 +2,6 @@ package com.kineticcat.in14n.block.multiblock;
 
 import com.google.gson.Gson;
 import com.kineticcat.in14n.Util;
-import com.kineticcat.in14n.block.multiblock.MBPart;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +20,10 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
@@ -96,9 +98,9 @@ public class MBController extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
         if (!level.isClientSide) {
-            Boolean found = testMultiblockArea(level, pos);
+            Boolean found = testArea(level, pos);
             if (found) {
-                swapParts(level, pos);
+                handleCreation(level, pos);
             }
         }
 
@@ -120,26 +122,9 @@ public class MBController extends BaseEntityBlock {
         pattern.data = newData;
     }
 
-    //i cannot be fucked to deal with this rn
-//    private String[][][] rotate3dArray(String[][][] arr) {
-//        String[][][] out = arr.clone();
-//
-//        for (int x=0; x<arr.length; x++) {
-//            for (int y=0; y<arr[0].length; y++) {
-//                for (int z=0; z<arr[0][0].length; z++) {
-//                    out[y][x][z] = arr[x][y][z];
-//                }
-//            }
-//        }
-//        arr = out;
-//
-//
-//        return out;
-//    }
+    private Boolean testArea(Level level, BlockPos controller) {
 
-    private Boolean testMultiblockArea(Level level, BlockPos pos) {
-
-        BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
+        BlockPos zero = controller.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
 
         for (int x=0; x<sizeX; x++) {
             for (int y=0; y<sizeY; y++) {
@@ -149,7 +134,7 @@ public class MBController extends BaseEntityBlock {
                     ResourceLocation location = ForgeRegistries.BLOCKS.getKey(state.getBlock());
                     assert location != null;
                     String blockName = location.getNamespace()+":"+location.getPath();
-//                    LOGGER.info(testPos +"|"+blockName+"|"+pattern.data[x][y][z]+"|");
+//                    LOGGER.info(testPos +"|"+blockName+"|"+pattern.data[x][y][z]+"|")
                     if (!(Objects.equals(pattern.data[x][y][z], "")) && !(Objects.equals(pattern.data[x][y][z], blockName))) {
                         LOGGER.info("nope");
                         level.addParticle(ParticleTypes.SMOKE, testPos.getX(), testPos.getY(), testPos.getZ(), 0.0, 0.0, 0.0);
@@ -161,7 +146,7 @@ public class MBController extends BaseEntityBlock {
         LOGGER.info("found");
         return true;
     }
-    private void swapParts(Level level, BlockPos pos) {
+    private void handleCreation(Level level, BlockPos pos) {
         BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
         for (int x=0; x<sizeX; x++) {
             for (int y=0; y<sizeY; y++) {
@@ -192,7 +177,7 @@ public class MBController extends BaseEntityBlock {
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity( BlockPos pos, BlockState state) {
         return null;
     }
 
