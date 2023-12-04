@@ -1,7 +1,5 @@
 package com.kineticcat.in14n.block.multiblock;
 
-import com.google.gson.Gson;
-import com.kineticcat.in14n.Util;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,10 +41,11 @@ public class MBController extends BaseEntityBlock {
     public String Name() {return null;} // to be overridden
     public  DirectionProperty FACING;
     public BooleanProperty ACTIVE;
-    public IntegerProperty XPOS;
-    public IntegerProperty YPOS;
-    public IntegerProperty ZPOS;
-
+    // local coords b/c annoying stuff
+    public IntegerProperty LXPOS;
+    public IntegerProperty LYPOS;
+    public IntegerProperty LZPOS;
+    private Direction direction;
 
     public MBController(Properties properties) {
         super(properties);
@@ -55,17 +54,11 @@ public class MBController extends BaseEntityBlock {
                 .setValue(FACING, Direction.NORTH)
                 .setValue(ACTIVE, Boolean.FALSE)
         );
+
     }
     public void gatherData() {
 
-        ResourceLocation file = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", Name()));
-        String path = file.getPath();
-
-        Util UTIL = new Util();
-        String text = UTIL.getFile(path);
-
-        Gson gson = new Gson();
-        pattern = gson.fromJson(text, MBPattern.class);
+        pattern = MBPattern.fromFile(String.format("in14n:data/in14n/patterns/%s.json", Name()));
 
         sizeX = pattern.data[0].length;
         sizeY = pattern.data.length;
@@ -73,11 +66,11 @@ public class MBController extends BaseEntityBlock {
 
         fixDataOrder();
 
-        XPOS = IntegerProperty.create("x", 0, sizeX-1);
-        YPOS = IntegerProperty.create("y", 0, sizeY-1);
-        ZPOS = IntegerProperty.create("z", 0, sizeZ-1);
+        LXPOS = IntegerProperty.create("x", 0, sizeX-1);
+        LYPOS = IntegerProperty.create("y", 0, sizeY-1);
+        LZPOS = IntegerProperty.create("z", 0, sizeZ-1);
 
-        // ?????
+        // why
         ACTIVE = BooleanProperty.create("active");
         FACING = BlockStateProperties.HORIZONTAL_FACING;
     }
@@ -98,10 +91,15 @@ public class MBController extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
         if (!level.isClientSide) {
-            Boolean found = testArea(level, pos);
-            if (found) {
-                handleCreation(level, pos);
+            Direction found = test(level, pos);
+            switch (found) {
+                case NORTH -> handleCreation(level, pos, Direction.NORTH);
+                case SOUTH -> handleCreation(level, pos, Direction.SOUTH);
+                case EAST -> handleCreation(level, pos, Direction.EAST);
+                case WEST -> handleCreation(level, pos, Direction.WEST);
+                case UP -> handleInvalid(level, pos);
             }
+
         }
 
         return InteractionResult.SUCCESS;
@@ -114,17 +112,25 @@ public class MBController extends BaseEntityBlock {
         String[][][] newData = new String[sizeX][sizeY][sizeZ];
         for (int y=0; y<sizeY; y++) {
             for (int x=0; x<sizeX; x++) {
-                for (int z=0; z<sizeZ; z++) {
-                    newData[x][y][z] = pattern.data[y][x][z];
-                }
+                System.arraycopy(pattern.data[y][x], 0, newData[x][y], 0, sizeZ);
             }
         }
         pattern.data = newData;
     }
-
-    private Boolean testArea(Level level, BlockPos controller) {
-
+    private Direction test(Level level, BlockPos controller) {
         BlockPos zero = controller.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
+
+        //test NSEW
+        if (testArea(level, controller, zero, Direction.NORTH)) return Direction.NORTH;
+        if (testArea(level, controller, zero, Direction.SOUTH)) return Direction.SOUTH;
+        if (testArea(level, controller, zero, Direction.EAST)) return Direction.EAST;
+        if (testArea(level, controller, zero, Direction.WEST)) return Direction.WEST;
+
+        return Direction.UP;
+    }
+    private Boolean testArea(Level level, BlockPos controller, BlockPos zero, Direction dir) {
+
+
 
         for (int x=0; x<sizeX; x++) {
             for (int y=0; y<sizeY; y++) {
@@ -146,7 +152,7 @@ public class MBController extends BaseEntityBlock {
         LOGGER.info("found");
         return true;
     }
-    private void handleCreation(Level level, BlockPos pos) {
+    private void handleCreation(Level level, BlockPos pos, Direction dir) {
         BlockPos zero = pos.subtract(new Vec3i(pattern.offset[0], pattern.offset[1], pattern.offset[2]));
         for (int x=0; x<sizeX; x++) {
             for (int y=0; y<sizeY; y++) {
@@ -155,24 +161,25 @@ public class MBController extends BaseEntityBlock {
                     BlockState oldState = level.getBlockState(swapPos);
                     ResourceLocation location = ForgeRegistries.BLOCKS.getKey(oldState.getBlock());
                     assert location != null;
-                    String blockName = location.getNamespace()+":"+location.getPath();
+                    //String blockName = location.getNamespace()+":"+location.getPath();
+                    BlockState newState;
                     if (!(x == pattern.offset[0] && y == pattern.offset[1] && z == pattern.offset[2])) {
                         // ensure controller is not replaced
-                        BlockState newState = getPartState();
-                        newState = newState.setValue(XPOS, x);
-                        newState = newState.setValue(YPOS, y);
-                        newState = newState.setValue(ZPOS, z);
-                        level.setBlockAndUpdate(swapPos, newState);
+                        newState = getPartState();
+                        newState = newState.setValue(LXPOS, x);
+                        newState = newState.setValue(LYPOS, y);
+                        newState = newState.setValue(LZPOS, z);
                     } else {
-                        BlockState newState = oldState.setValue(ACTIVE, Boolean.TRUE);
-                        level.setBlockAndUpdate(swapPos, newState);
+                        newState = oldState.setValue(ACTIVE, Boolean.TRUE);
                     }
+                    level.setBlockAndUpdate(swapPos, newState);
                 }
             }
         }
     }
 
-
+    // tell player that the mb is built wrong
+    public void handleInvalid(Level level, BlockPos pos) {}
 
 
     @Nullable

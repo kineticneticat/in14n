@@ -1,8 +1,25 @@
 package com.kineticcat.in14n.block.multiblock;
 
+import com.google.gson.Gson;
 import com.kineticcat.in14n.Util;
+import net.minecraft.resources.ResourceLocation;
 
 public class MBPattern {
+
+    public static MBPattern fromFile(String fn) {
+
+        ResourceLocation file = new ResourceLocation(fn);
+        String path = file.getPath();
+
+        Util UTIL = new Util();
+        String text = UTIL.getFile(path);
+
+        Gson gson = new Gson();
+        return gson.fromJson(text, MBPattern.class);
+
+    }
+
+
 
     //data uses YXZ
     //offset uses XYZ

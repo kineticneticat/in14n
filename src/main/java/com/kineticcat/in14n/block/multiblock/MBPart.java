@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 public class MBPart extends BaseEntityBlock {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    private MBPattern pattern;
     public IntegerProperty XPOS;
     public IntegerProperty YPOS;
     public IntegerProperty ZPOS;
@@ -42,14 +43,7 @@ public class MBPart extends BaseEntityBlock {
     }
     public void gatherData() {
 
-        ResourceLocation file = new ResourceLocation(String.format("in14n:data/in14n/patterns/%s.json", Name()));
-        String path = file.getPath();
-
-        Util UTIL = new Util();
-        String text = UTIL.getFile(path);
-
-        Gson gson = new Gson();
-        MBPattern pattern = gson.fromJson(text, MBPattern.class);
+        pattern = MBPattern.fromFile(String.format("in14n:data/in14n/patterns/%s.json", Name()));
 
         sizeX = pattern.data[0].length;
         sizeY = pattern.data.length;
