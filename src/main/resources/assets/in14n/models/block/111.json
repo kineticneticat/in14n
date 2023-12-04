@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "in14n:blocks/111",
-		"particle": "in14n:blocks/111"
+		"0": "in14n:block/111",
+		"particle": "in14n:block/111"
 	},
 	"elements": [
 		{
